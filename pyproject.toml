@@ -1,0 +1,75 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.module]
+name = "py_html"
+
+
+[project]
+name = "py-html"
+authors = [
+   {name = "Ezeudoh Tochukwu", email = "tochukwu.ezeudoh@gmail.com"},
+]
+dynamic = ["version", "description"]
+requires-python = ">=3.7"
+readme = "README.md"
+home-page = "https://github.com/python-ellar/ellar"
+classifiers = [
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Typing :: Typed",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+    "Framework :: AsyncIO",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Internet :: WWW/HTTP",
+]
+
+dependencies = [
+]
+
+[project.urls]
+Documentation = "https://python-ellar.github.io/py-html/"
+Source = "https://github.com/python-ellar/py-html"
+Homepage = "https://python-ellar.github.io/py-html/"
+"Bug Tracker" = "https://github.com/python-ellar/py-html/issues"
+
+[project.optional-dependencies]
+all = []
+
+[tool.ruff]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+#    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "W191", # indentation contains tabs
+    "E742", # Ambiguous class name: `I`
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+
