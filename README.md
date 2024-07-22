@@ -7,7 +7,7 @@ It simply provides components that make it easier to build the HTML template fas
 
 Although there are Jinja and Mako in this space, I don't intend to make this library a substitute for such a package.
 
-**This is just an experiment. **
+**This is just an experiment.**
 
 ## Quick Bootstrap Example
 ```python
