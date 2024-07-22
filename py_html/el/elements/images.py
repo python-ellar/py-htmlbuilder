@@ -196,5 +196,5 @@ class Use(BaseHTML):
             **attrs,
         )
 
-    def _tag_output(self, attrs: str, inner_html: str) -> str:
+    def render_tag(self, attrs: str, inner_html: str) -> str:
         return f"<{self.tag} {attrs}/>"

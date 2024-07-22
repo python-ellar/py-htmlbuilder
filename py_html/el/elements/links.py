@@ -121,7 +121,7 @@ class Link(BaseHTML):
             **attrs,
         )
 
-    def _tag_output(self, attrs: str, inner_html: str) -> str:
+    def render_tag(self, attrs: str, inner_html: str) -> str:
         tag_output = f"<{self.tag} {attrs}/>" if attrs else f"<{self.tag}/>"
         return tag_output
 

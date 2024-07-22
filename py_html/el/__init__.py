@@ -1,6 +1,6 @@
 import typing as t
 
-from .base import BaseElement, BaseHTML, Element
+from .base import BaseElement, BaseHTML, Element, Fragment
 from .elements.audio import Audio, Source, Track, Video
 from .elements.basic import (
     DOCTYPE,
@@ -13,7 +13,6 @@ from .elements.basic import (
     Body,
     Br,
     Comment,
-    Fragment,
     Head,
     Hr,
     Html,

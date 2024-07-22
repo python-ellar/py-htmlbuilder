@@ -1,6 +1,6 @@
 import typing as t
 
-from py_html.el.base import BaseHTML, BuildContext
+from py_html.el.base import BaseHTML, NodeContext
 from py_html.styles import StyleCSS
 
 
@@ -17,9 +17,9 @@ class Style(BaseHTML):
         super().__init__(type=type, media=media, **attrs)
         self.content = content
 
-    def render(self, ctx: BuildContext) -> str:
-        if isinstance(self.content, (dict, StyleCSS)):
-            ensure_style_css = StyleCSS(**self.content)
+    def render_content(self, content: t.Any, ctx: NodeContext) -> str:
+        if isinstance(content, (dict, StyleCSS)):
+            ensure_style_css = StyleCSS(**content)
 
             inner_html = " ".join(
                 (
@@ -27,9 +27,8 @@ class Style(BaseHTML):
                     for k, v in ensure_style_css.items()
                 )
             )
-            attrs = self._render_attributes(ctx)
-            return self._tag_output(attrs, inner_html)
-        return super().render(ctx)
+            return inner_html
+        return ctx.get_content(content)
 
 
 class Div(BaseHTML):

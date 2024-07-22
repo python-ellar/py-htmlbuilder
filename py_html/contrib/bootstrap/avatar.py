@@ -1,14 +1,18 @@
 import typing as t
 
+from py_html.el import Fragment, Element
+from py_html.el.base import NodeContext, Component, BuildContext
+
 import py_html.el as el
 from py_html.contrib.bootstrap._types import BVariants
 from py_html.contrib.bootstrap.icon import BIcon
 from py_html.contrib.bootstrap.util import apply_classes
 from py_html.styles import StyleCSS
 
+
 avatar_style = el.Style(
     {
-        ".b-avatar": StyleCSS(
+        ".b-avatar-testing": StyleCSS(
             display="inline-flex",
             align_items="center",
             justify_content="center",
@@ -24,47 +28,27 @@ avatar_style = el.Style(
             line_height=1,
             transition="color .15s ease-in-out background-color .15s ease-in-out, box-shadow .15s ease-in-out",
         ),
-        ".b-avatar .b-avatar-text": StyleCSS(
-            text_transform="uppercase", white_space="nowrap"
-        ),
-        ".b-avatar > .b-icon": StyleCSS(width="60%", height="auto", max_width="100%"),
-        ".b-icon.bi": StyleCSS(
-            display="inline-block", overflow="visible", vertical_align="-.15em"
-        ),
-        ".b-avatar .b-avatar-badge ": StyleCSS(
-            position='absolute',
-            min_height='1.5em',
-            min_width='1.5em',
-            padding='0.25em',
-            line_height=1,
-            border_radius="10em",
-            font_size="70%",
-            font_weight=700,
-            z_index=1
-        ),
-        '.b-avatar-group .b-avatar-group-inner': StyleCSS(
-            display="flex",
-            flex_wrap="wrap"
-        )
     }
 )
 
 
-class BAvatar(el.BaseElement):
+class BAvatar(el.BaseElement, Component):
+
     class_name = "b-avatar"
 
     def __init__(
-        self,
-        tag: str = "span",
-        size: t.Optional[str] = None,
-        badge: t.Optional[t.Any] = None,
-        variant: t.Optional[BVariants] = "secondary",
-        badge_variant: t.Optional[BVariants] = "secondary",
-        badge_position: t.Literal["top-right", "top-left", "bottom-left", "bottom-right"] = "bottom-right",
-        rounded: t.Literal["circle", "square"] = "circle",
-        icon: t.Optional[str] = None,
-        text: t.Optional[str] = None,
-        **attrs,
+            self,
+            tag: str = "span",
+            size: t.Optional[str] = None,
+            badge: t.Optional[t.Any] = None,
+            variant: t.Optional[BVariants] = "secondary",
+            badge_variant: t.Optional[BVariants] = "secondary",
+            badge_position: t.Literal["top-right", "top-left", "bottom-left", "bottom-right"] = "bottom-right",
+            rounded: t.Literal["circle", "square"] = "circle",
+            icon: t.Optional[str] = None,
+            text: t.Optional[str] = None,
+            content: t.Optional[t.Any] = None,
+            **attrs,
     ):
         self.tag = tag
         self.badge = badge
@@ -75,68 +59,48 @@ class BAvatar(el.BaseElement):
         self.badge_variant = badge_variant
         self.rounded = rounded
         self.size = size
+        self.slot = content
 
         if not self.icon and not self.text:
             self.icon = "people-fill"
 
         super().__init__(**attrs)
 
+    def exports(self, ctx: BuildContext) -> None:
+        ctx.add_root_style(avatar_style)
 
-    def render(self, ctx: t.Dict) -> str:
-        slot = self.content
-        if not isinstance(self.content, (list, tuple)):
-            slot = [self.content]
-
-        class_name = self.class_name + " " + apply_classes(
+    def resolve_content(self) -> t.Union[Fragment, Element]:
+        self.class_name = self.class_name + " " + apply_classes(
             bg=self.variant, rounded=self.rounded, badge=True
         )
 
         if self.size:
             self.style.update_style(width=self.size, height=self.size)
 
-        element = _ElementTag(
-            tag=self.tag,
-            style=self.style,
-            class_name=class_name,
-            content=el.Fragment(
-                BAvatarText(
-                    content=self.text,
-                    style=StyleCSS(font_size=f"calc({self.size} * 0.4)")
-                    if self.size
-                    else None,
-                )
-                if self.text
+        return el.Fragment(
+            BAvatarText(
+                content=self.text,
+                style=StyleCSS(font_size=f"calc({self.size} * 0.4)")
+                if self.size
                 else None,
-                el.Span(
-                    content=BIcon(
-                        icon_name=self.icon,
-                        variant=None,
-                    ),
-                    style=StyleCSS(font_size=f"calc({self.size} * 0.6)")
-                    if self.size
-                    else None,
-                )
-                if self.icon
+            )
+            if self.text
+            else None,
+            el.Span(
+                content=BIcon(
+                    icon_name=self.icon,
+                    variant=None,
+                ),
+                style=StyleCSS(font_size=f"calc({self.size} * 0.6)")
+                if self.size
                 else None,
-                BAvatarBadge(content=self.badge, variant=self.badge_variant, position=self.badge_position)
-                if self.badge else el.Comment(),
-                *slot,
-            ),
-            **self.attrs,
+            )
+            if self.icon
+            else None,
+            BAvatarBadge(content=self.badge, variant=self.badge_variant, position=self.badge_position)
+            if self.badge else el.Comment(),
+            self.slot,
         )
-
-        ctx.setdefault("root_styles", []).append(avatar_style)
-        return element.render(ctx)
-
-
-class _ElementTag(el.BaseHTML):
-    def __init__(
-        self,
-        tag: str = "span",
-        **attrs,
-    ):
-        self.tag = tag
-        super().__init__(**attrs)
 
 
 class BAvatarText(el.Span):
@@ -159,7 +123,7 @@ class BAvatarBadge(el.Span):
 
         super().__init__(class_name=class_name, style=style, **attrs)
 
-    def render(self, ctx: t.Dict) -> str:
+    def render_attributes(self, ctx: NodeContext) -> str:
         position_style = {}
 
         if self.position == "bottom-right":
@@ -174,7 +138,7 @@ class BAvatarBadge(el.Span):
         self.style = StyleCSS(**(self.style or {}), **position_style)
         self.class_name = self.class_name + apply_classes(badge=True, bg=self.variant)
 
-        return super().render(ctx)
+        return super().render_attributes(ctx)
 
 
 class BAvatarGroup(el.BaseElement):
@@ -230,40 +194,23 @@ class _BAvatarGroupInner(el.Div):
             return StyleCSS(padding_left=formular, padding_right=formular)
         return StyleCSS()
 
-    def _set_child_props(self, ctx: t.Dict) -> str:
-        content = self.content
-        if callable(content):
-            content = self.content(ctx)
-        elif isinstance(content, el.Fragment):
-            content = content.contents
-
-        _gen = []
-
-        for avatar in (item for item in (content if isinstance(content, (list, tuple)) else [content])):
-            if callable(avatar):
-                avatar = avatar(ctx)
-
-            if isinstance(avatar, BAvatar):
+    def render_content(self, content: t.Any, ctx: NodeContext) -> str:
+        for node in (list(content) if isinstance(content, (list, tuple)) else [content]):
+            if isinstance(node.element, BAvatar):
                 if self.size:
-                    avatar.size = self.size
+                    node.element.size = self.size
 
                     formular = f"calc((-{self.size}) * {self.overlap * 0.5})"
-                    avatar.style.update_style(margin_left=formular, margin_right=formular)
+                    node.element.style.update_style(margin_left=formular, margin_right=formular)
 
                 if self.rounded:
-                    avatar.rounded = self.rounded
+                    node.element.rounded = self.rounded
 
                 if self.variant:
-                    avatar.variant = self.variant
+                    node.element.variant = self.variant
 
-            _gen.append(super()._render_content(avatar, ctx))
+        return ctx.get_content(content)
 
-        return " ".join(_gen)
-
-    def render(self, ctx: t.Dict) -> str:
+    def render_attributes(self, ctx: NodeContext) -> str:
         self.style = StyleCSS(**(self.style or {}), **self.get_parent_style())
-
-        attrs = self._render_attributes(ctx)
-        inner_html = self._set_child_props(ctx)
-
-        return self._tag_output(attrs, inner_html)
+        return super().render_attributes(ctx)

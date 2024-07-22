@@ -3,142 +3,158 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
 from py_html.styles.utils import snake_to_kebab
-
 from ellar.common.compatible import AttributeDict
-
 from py_html.styles import StyleCSS
 
 
 class NodeContext:
-    def __init__(self, element, content) -> None:
-        self.element = element
-        self.content = content
+    def __init__(self, parent: t.Any, node_element: 'Element', node_content: t.Any) -> None:
+        self.node_element = node_element
+        self.parent_element = parent
+        self.node_content = node_content
+
+    def get_content(self, item: t.Any) -> str:
+        if item is None or type(item) is bool:
+            return ""
+
+        if isinstance(item, NodeContext):
+            return item.render()
+
+        if isinstance(item, (list, tuple)):
+            return "".join(
+                self.get_content(child)
+                for child in item
+            )
+
+        return str(item)
 
     def render(self) -> str:
-        pass
+        inner_html = self.node_element.render_content(self.node_content, self)
+        attrs = self.node_element.render_attributes(self)
+        
+        return self.node_element.render_tag(attrs, inner_html)
 
 
 class BuildContext:
+    """
+    TODO: Refactor Build Context More
+    """
     def __init__(self, rendering_context: t.Dict, root_element: 'Element') -> None:
         self.ctx = dict(rendering_context)
         self.root = root_element
+
+    def get(self, key: t.Any, default=None) -> t.Optional[t.Any]:
+        return self.ctx.get(key, default)
+
+    def add_root_style(self, element: 'Element') -> None:
+        self.ctx.setdefault('root_styles', []).append(element)
+
+    def add_bottom_scripts(self, element: 'Element') -> None:
+        self.ctx.setdefault('bottom_scripts', []).append(element)
 
     @classmethod
     def create_context(cls, rendering_context: t.Dict, root_element: 'Element') -> 'BuildContext':
         return cls(rendering_context, root_element)
 
     @contextmanager
-    def render_with_context(self, element) ->  t.Generator['FactoryBuildContext', t.Any, None]:
-        yield FactoryBuildContext(self.ctx, element)
+    def render_with_context(self, element) -> t.Generator['FactoryBuildContext', t.Any, None]:
+        yield FactoryBuildContext(self.ctx, self.root, element)
 
-    def render_with_props(self, props: t.Any, owner: t.Any) -> t.Any:
-        pass
+    def child_node_context(self, element: t.Any, child: t.Any) -> t.Union[NodeContext, t.List[NodeContext]]:
+        if isinstance(child, Element):
+            if isinstance(child, LazyComponent):
+                child.set_context_data(self)
 
-    def render_content(self, content: t.Union['Element', t.Any]) -> str:
-        def _gen_content(item: t.Any) -> str:
-            if item is None or type(item) is bool:
-                return ""
+            if isinstance(child, Component):
+                content = self.child_node_context(child, child.resolve_content())
+                child.exports(self)
+            else:
+                content = self.child_node_context(child, child.content)
+            return NodeContext(parent=element, node_element=child, node_content=content)
 
-            if isinstance(item, Element):
-                return item.render(self)
+        if isinstance(child, (list, tuple, Fragment)):
+            return [
+                self.child_node_context(element, child=item)
+                for item in child
+            ]
 
-            if isinstance(item, (list, tuple)):
-                return "".join(
-                    _gen_content(item=child)
-                    for child in item
-                )
+        if callable(child):
+            with self.render_with_context(child) as factory_ctx:
+                return factory_ctx.build_context(parent=element)
 
-            if callable(item):
-                with self.render_with_context() as factory_ctx:
-                    return factory_ctx.render_content(item)
+        return child
 
-            return str(item)
+    def get_node_context(self, element: t.Union['Element', 'Fragment'], parent: t.Any) -> t.Union[
+        t.List[NodeContext], NodeContext
+    ]:
+        if isinstance(element, (list, tuple, Fragment)):
+            return [
+                self.child_node_context(parent, child=child)
+                for child in element
+            ]
 
-        return _gen_content(content)
+        content = self.child_node_context(parent, element.content)
+        return NodeContext(parent, node_element=element, node_content=content)
 
-    def get_node_context(self, element: t.Union['Element', t.Any]) -> t.List[NodeContext]:
-        def _gen_content(item: t.Any):
-            if item is None or type(item) is bool:
-                return ""
-
-            if isinstance(item, Element):
-                return NodeContext(item, content=_gen_content(item.content))
-
-            if isinstance(item, (list, tuple)):
-                return [
-                    _gen_content(item=child)
-                    for child in item
-                ]
-
-            if callable(item):
-                with self.render_with_context(item) as factory_ctx:
-                    return factory_ctx.build_context()
-
-            return item
-
-        return NodeContext(element, content=_gen_content(element.content))
-
-    def build_context(self) -> t.Union[NodeContext, t.List[NodeContext]]:
-        return self.get_node_context(self.root)
+    def build_context(self, parent=None) -> t.Union[NodeContext, t.List[NodeContext]]:
+        return self.get_node_context(self.root, parent=parent)
 
 
 class FactoryBuildContext(BuildContext):
+    """
+    Resolves Elements and Element Content that requires ctx object passed to it.
+    It also ensures the scope of the ctx passed maintained and expires when down.
+    """
     def __init__(self, rendering_context: t.Dict, root_element: 'Element', element) -> None:
-        super().__init__(rendering_context, root_element)
+        super().__init__({}, root_element)
+        self.ctx = rendering_context
         self.element_factory = element
 
     @contextmanager
     def render_with_context(self, element):
         raise Exception("Context is already Available in Scope")
 
-    def render_with_props(self, props: t.Any, owner: t.Any) -> t.Any:
-        pass
-
-    def render_content(self, content: t.Union['Element', t.Any]) -> str:
-        return super().render_content(content(self))
-
-    def build_context(self) -> t.Union[NodeContext, t.List[NodeContext]]:
-        content = self.element_factory(self)
-        return self.get_node_context(content)
+    def build_context(self, parent=None) -> t.Union[NodeContext, t.List[NodeContext]]:
+        content = Fragment(self.element_factory(self))
+        return self.get_node_context(content, parent=parent)
 
 
 def render_component(element: t.Union['Element', t.Any], ctx: t.Dict) -> str:
     build_context = BuildContext.create_context(ctx, root_element=element)
     root_node = build_context.build_context()
+
     assert root_node
+    content = root_node.render()
+
+    return content
     # return element.render(build_context)
 
 
 class Element(ABC):
-    content = ""
-    # def _render_content(self, content: t.Any, ctx: t.Dict) -> str:
-    #     ensure_content = content
-    #     if callable(content):
-    #         ensure_content = content(ctx)
-    #
-    #     def _gen_content(item: t.Any) -> str:
-    #         if item is None or type(item) is bool:
-    #             return ""
-    #
-    #         if isinstance(item, Element):
-    #             return item.render(ctx)
-    #
-    #         if callable(content):
-    #             raise Exception(f"Invalid Setup. Cant render => {content}")
-    #
-    #         return str(item)
-    #
-    #     if isinstance(ensure_content, (list, tuple)):
-    #         return "".join(
-    #             _gen_content(item=child)
-    #             for child in ensure_content
-    #         )
-    #
-    #     return _gen_content(ensure_content)
+    content = None
+    attrs: t.Dict = {}
 
     @abstractmethod
-    def render(self, ctx: BuildContext) -> str:
+    def render_tag(self, attrs: str, inner_html: str) -> str:
         """Render element"""
+
+    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
+        """Dynamic set or modify Element Properties before render"""
+        return ctx.get_content(content)
+
+    def render_attributes(self, ctx: NodeContext) -> str:
+        rendered_attrs = []
+
+        for key, value in ((k, v) for k, v in self.attrs.items() if v):
+            key = snake_to_kebab(key)
+            if isinstance(value, StyleCSS):
+                rendered_attrs.append(f'{key}="{value.render()}"')
+            else:
+                if isinstance(value, bool):
+                    rendered_attrs.append(f"{key}")
+                else:
+                    rendered_attrs.append(f'{key}="{value}"')
+        return " ".join(rendered_attrs)
 
 
 class BaseElement(Element):
@@ -230,9 +246,7 @@ class BaseElement(Element):
         self.dir = dir
         self.class_name = class_name
 
-    def _render_attributes(self, ctx: BuildContext) -> str:
-        rendered_attrs = []
-
+    def render_attributes(self, ctx: NodeContext) -> str:
         self.attrs.update(
             {
                 "class": self.class_name,
@@ -243,27 +257,12 @@ class BaseElement(Element):
                 "style": self.style,
             }
         )
+        return super().render_attributes(ctx)
 
-        for key, value in ((k, v) for k, v in self.attrs.items() if v):
-            key = snake_to_kebab(key)
-            if isinstance(value, StyleCSS):
-                rendered_attrs.append(f'{key}="{value.render()}"')
-            else:
-                if isinstance(value, bool):
-                    rendered_attrs.append(f"{key}")
-                else:
-                    rendered_attrs.append(f'{key}="{value}"')
-        return " ".join(rendered_attrs)
-
-    def _tag_output(self, attrs: str, inner_html: str) -> str:
+    def render_tag(self, attrs: str, inner_html: str) -> str:
         opening_tag = f"<{self.tag} {attrs}>" if attrs else f"<{self.tag}>"
         closing_tag = f"</{self.tag}>"
         return f"{opening_tag}{inner_html}{closing_tag}"
-
-    def render(self, ctx: BuildContext):
-        attrs = self._render_attributes(ctx)
-        inner_html = ctx.render_content(self.content)
-        return self._tag_output(attrs, inner_html)
 
 
 class BaseHTML(BaseElement):
@@ -326,3 +325,62 @@ class BaseHTML(BaseElement):
             onunload=onunload,
             **attrs,
         )
+
+
+class Fragment:
+    def __init__(self, *contents: t.Union[Element, t.Any]) -> None:
+        self.content = list(contents)
+
+    def __iter__(self):
+        for item in self.content:
+            if isinstance(item, (Fragment, list, tuple)):
+                for y in item:
+                    yield y
+                continue
+            yield item
+
+
+class LazyComponent(BaseElement):
+    """
+    Defers NodeContext computation till during rendering
+    """
+    content: t.Any = None
+
+    def __init__(self, resolver: t.Callable, **attrs) -> None:
+        self.tag = "lazy-component"
+
+        super(LazyComponent, self).__init__(**attrs)
+
+        self._resolver = resolver
+        self._ctx: t.Optional[BuildContext] = None
+
+    def set_context_data(self, ctx: BuildContext) -> None:
+        self._ctx = ctx
+
+    def resolve_lazy_element(self, parent: t.Optional['Element'] = None) -> t.Union[NodeContext, t.List[NodeContext]]:
+        assert self._ctx is not None, "please set_context_data() before resolving element."
+
+        element = self._resolver()
+        return self._ctx.child_node_context(parent, element)
+
+    def render_tag(self, attrs: str, inner_html: str) -> str:
+        if attrs:
+            return f"<div {attrs}>{inner_html}</div>"
+        return inner_html
+
+    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
+        resolved_content = self.resolve_lazy_element(ctx.parent_element)
+        return ctx.get_content(resolved_content)
+
+
+class Component:
+    """
+    Provide dynamic content through `resolve_content` method.
+    """
+    @abstractmethod
+    def resolve_content(self) -> t.Union[Fragment, Element]:
+        pass
+
+    @abstractmethod
+    def exports(self, ctx: BuildContext) -> None:
+        """Exports CSS of Scripts to HTML"""

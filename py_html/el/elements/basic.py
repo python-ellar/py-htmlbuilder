@@ -1,15 +1,18 @@
 import typing as t
 
-from py_html.el.base import BaseElement, BaseHTML, Element, BuildContext
+from py_html.el.base import BaseElement, BaseHTML, Element, NodeContext
 
 
 class DOCTYPE(Element):
     def __init__(self, page_content: t.Any) -> None:
         self.content = page_content
 
-    def render(self, ctx: BuildContext):
-        html = ctx.render_content(self.content)
-        return f"<!DOCTYPE html>{html}"
+    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
+        return ctx.get_content(content)
+
+    def render_tag(self, attrs: str, inner_html: str):
+        # html = ctx.render_content(self.content)
+        return f"<!DOCTYPE html>{inner_html}"
 
 
 class Html(BaseElement):
@@ -30,10 +33,10 @@ class Head(BaseElement):
 
 class Title(Element):
     def __init__(self, page_title: str = "") -> None:
-        self.page_title = page_title
+        self.content = page_title
 
-    def render(self, ctx: t.Dict):
-        return f"<title>{self.page_title}</title>"
+    def render_tag(self, attrs: str, inner_html: str):
+        return f"<title>{inner_html}</title>"
 
 
 class Body(BaseHTML):
@@ -71,7 +74,7 @@ class P(BaseHTML):
 class Br(BaseHTML):
     tag = "br"
 
-    def _tag_output(self, attrs: str, inner_html: str):
+    def render_tag(self, attrs: str, inner_html: str):
         return f"<{self.tag} {attrs}>" if attrs else f"<{self.tag}>"
 
 
@@ -81,16 +84,7 @@ class Hr(Br):
 
 class Comment(Element):
     def __init__(self, comment: str = "") -> None:
-        self.comment = comment
+        self.content = comment
 
-    def render(self, ctx: t.Dict):
-        return f"<!--{self.comment}-->"
-
-
-class Fragment(Element):
-    def __init__(self, *contents: t.Union[Element, t.Any]) -> None:
-        self.content = contents
-
-    def render(self, ctx: BuildContext):
-        _gen = (ctx.render_content(content) for content in self.content)
-        return " ".join(_gen)
+    def render_tag(self, attrs: str, inner_html: str) -> str:
+        return f"<!--{inner_html}-->"

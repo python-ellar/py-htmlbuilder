@@ -31,7 +31,7 @@ class Meta(BaseElement):
         super().__init__(charset=charset, name=name, **attrs)
         self.attrs.update(content=content)
 
-    def _tag_output(self, attrs: str, inner_html: str) -> str:
+    def render_tag(self, attrs: str, inner_html: str) -> str:
         return f"<{self.tag} {attrs} {inner_html}>"
 
 
