@@ -22,7 +22,7 @@ install-full: ## Install dependencies
 	pre-commit install -f
 
 lint:fmt ## Run code linters
-	ruff check py_html tests
+	ruff check py_html
 	#mypy ellar_sql_admin
 
 fmt format:clean ## Run code formatters

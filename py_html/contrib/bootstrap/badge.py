@@ -1,20 +1,20 @@
-from py_html.contrib.bootstrap.util import apply_classes
-
-from py_html.contrib.bootstrap._types import BVariants
-import py_html.el as el
 import typing as t
+
+import py_html.el as el
+from py_html.contrib.bootstrap._types import BVariants
+from py_html.contrib.bootstrap.util import apply_classes
 
 
 class BBadge(el.BaseHTML):
     class_name = "badge"
 
     def __init__(
-            self,
-            tag: str = 'span',
-            variant: t.Optional[BVariants] = "secondary",
-            pill: bool = False,
-            class_name: t.Optional[str] = "",
-            **attrs
+        self,
+        tag: str = "span",
+        variant: t.Optional[BVariants] = "secondary",
+        pill: bool = False,
+        class_name: t.Optional[str] = "",
+        **attrs,
     ):
         self.tag = tag
         self.variant = variant

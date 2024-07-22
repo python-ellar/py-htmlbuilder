@@ -1,14 +1,12 @@
 import typing as t
 
-from py_html.el import Fragment, Element
-from py_html.el.base import NodeContext, Component, BuildContext
-
 import py_html.el as el
 from py_html.contrib.bootstrap._types import BVariants
 from py_html.contrib.bootstrap.icon import BIcon
 from py_html.contrib.bootstrap.util import apply_classes
+from py_html.el import Element, Fragment
+from py_html.el.base import BuildContext, Component, NodeContext
 from py_html.styles import StyleCSS
-
 
 avatar_style = el.Style(
     {
@@ -33,22 +31,23 @@ avatar_style = el.Style(
 
 
 class BAvatar(el.BaseElement, Component):
-
     class_name = "b-avatar"
 
     def __init__(
-            self,
-            tag: str = "span",
-            size: t.Optional[str] = None,
-            badge: t.Optional[t.Any] = None,
-            variant: t.Optional[BVariants] = "secondary",
-            badge_variant: t.Optional[BVariants] = "secondary",
-            badge_position: t.Literal["top-right", "top-left", "bottom-left", "bottom-right"] = "bottom-right",
-            rounded: t.Literal["circle", "square"] = "circle",
-            icon: t.Optional[str] = None,
-            text: t.Optional[str] = None,
-            content: t.Optional[t.Any] = None,
-            **attrs,
+        self,
+        tag: str = "span",
+        size: t.Optional[str] = None,
+        badge: t.Optional[t.Any] = None,
+        variant: t.Optional[BVariants] = "secondary",
+        badge_variant: t.Optional[BVariants] = "secondary",
+        badge_position: t.Literal[
+            "top-right", "top-left", "bottom-left", "bottom-right"
+        ] = "bottom-right",
+        rounded: t.Literal["circle", "square"] = "circle",
+        icon: t.Optional[str] = None,
+        text: t.Optional[str] = None,
+        content: t.Optional[t.Any] = None,
+        **attrs,
     ):
         self.tag = tag
         self.badge = badge
@@ -70,8 +69,10 @@ class BAvatar(el.BaseElement, Component):
         ctx.add_root_style(avatar_style)
 
     def resolve_content(self) -> t.Union[Fragment, Element]:
-        self.class_name = self.class_name + " " + apply_classes(
-            bg=self.variant, rounded=self.rounded, badge=True
+        self.class_name = (
+            self.class_name
+            + " "
+            + apply_classes(bg=self.variant, rounded=self.rounded, badge=True)
         )
 
         if self.size:
@@ -97,8 +98,13 @@ class BAvatar(el.BaseElement, Component):
             )
             if self.icon
             else None,
-            BAvatarBadge(content=self.badge, variant=self.badge_variant, position=self.badge_position)
-            if self.badge else el.Comment(),
+            BAvatarBadge(
+                content=self.badge,
+                variant=self.badge_variant,
+                position=self.badge_position,
+            )
+            if self.badge
+            else el.Comment(),
             self.slot,
         )
 
@@ -111,12 +117,14 @@ class BAvatarBadge(el.Span):
     class_name = "b-avatar-badge"
 
     def __init__(
-            self,
-            variant: t.Optional[BVariants] = "secondary",
-            position: t.Literal["top-right", "top-left", "bottom-left", "bottom-right"] = "bottom-right",
-            class_name: t.Optional[str] = "",
-            style: t.Optional[StyleCSS] = None,
-            **attrs
+        self,
+        variant: t.Optional[BVariants] = "secondary",
+        position: t.Literal[
+            "top-right", "top-left", "bottom-left", "bottom-right"
+        ] = "bottom-right",
+        class_name: t.Optional[str] = "",
+        style: t.Optional[StyleCSS] = None,
+        **attrs,
     ):
         self.variant = variant
         self.position = position
@@ -145,17 +153,17 @@ class BAvatarGroup(el.BaseElement):
     class_name = "b-avatar-group"
 
     def __init__(
-            self,
-            tag: str = "div",
-            over_lap: t.Optional[float] = 0.3,
-            size: t.Optional[str] = None,
-            rounded: t.Optional[t.Literal["circle", "square"]] = None,
-            variant: t.Optional[BVariants] = None,
-            content: t.Optional[t.Any] = None,
-            **attrs
+        self,
+        tag: str = "div",
+        over_lap: t.Optional[float] = 0.3,
+        size: t.Optional[str] = None,
+        rounded: t.Optional[t.Literal["circle", "square"]] = None,
+        variant: t.Optional[BVariants] = None,
+        content: t.Optional[t.Any] = None,
+        **attrs,
     ) -> None:
         self.tag = tag
-        attrs.setdefault('role', 'group')
+        attrs.setdefault("role", "group")
 
         super().__init__(
             content=_BAvatarGroupInner(
@@ -163,9 +171,9 @@ class BAvatarGroup(el.BaseElement):
                 size=size,
                 over_lap=over_lap,
                 rounded=rounded,
-                variant=variant
+                variant=variant,
             ),
-            **attrs
+            **attrs,
         )
 
 
@@ -173,14 +181,13 @@ class _BAvatarGroupInner(el.Div):
     class_name = "b-avatar-group-inner"
 
     def __init__(
-            self,
-            size: t.Optional[str] = None,
-            over_lap: t.Optional[float] = 0.3,
-            rounded: t.Optional[t.Literal["circle", "square"]] = None,
-            variant: t.Optional[BVariants] = None,
-            **attrs
+        self,
+        size: t.Optional[str] = None,
+        over_lap: t.Optional[float] = 0.3,
+        rounded: t.Optional[t.Literal["circle", "square"]] = None,
+        variant: t.Optional[BVariants] = None,
+        **attrs,
     ) -> None:
-
         self.size = size
         self.rounded = rounded
         self.variant = variant
@@ -195,13 +202,15 @@ class _BAvatarGroupInner(el.Div):
         return StyleCSS()
 
     def render_content(self, content: t.Any, ctx: NodeContext) -> str:
-        for node in (list(content) if isinstance(content, (list, tuple)) else [content]):
+        for node in list(content) if isinstance(content, (list, tuple)) else [content]:
             if isinstance(node.element, BAvatar):
                 if self.size:
                     node.element.size = self.size
 
                     formular = f"calc((-{self.size}) * {self.overlap * 0.5})"
-                    node.element.style.update_style(margin_left=formular, margin_right=formular)
+                    node.element.style.update_style(
+                        margin_left=formular, margin_right=formular
+                    )
 
                 if self.rounded:
                     node.element.rounded = self.rounded

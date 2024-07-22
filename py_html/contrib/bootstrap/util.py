@@ -8,7 +8,7 @@ def apply_classes(**class_name_obj: t.Any) -> str:
     for k, v in class_name_obj.items():
         if v:
             k = snake_to_kebab(k)
-            if type(v) == bool and v is True:
+            if type(v) is bool and v is True:
                 class_name += f"{k} "
             else:
                 class_name += f"{k}-{v} "

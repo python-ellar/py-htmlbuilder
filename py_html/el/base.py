@@ -2,13 +2,16 @@ import typing as t
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
-from py_html.styles.utils import snake_to_kebab
 from ellar.common.compatible import AttributeDict
+
 from py_html.styles import StyleCSS
+from py_html.styles.utils import snake_to_kebab
 
 
 class NodeContext:
-    def __init__(self, parent: t.Any, node_element: 'Element', node_content: t.Any) -> None:
+    def __init__(
+        self, parent: t.Any, node_element: "Element", node_content: t.Any
+    ) -> None:
         self.node_element = node_element
         self.parent_element = parent
         self.node_content = node_content
@@ -21,17 +24,14 @@ class NodeContext:
             return item.render()
 
         if isinstance(item, (list, tuple)):
-            return "".join(
-                self.get_content(child)
-                for child in item
-            )
+            return "".join(self.get_content(child) for child in item)
 
         return str(item)
 
     def render(self) -> str:
         inner_html = self.node_element.render_content(self.node_content, self)
         attrs = self.node_element.render_attributes(self)
-        
+
         return self.node_element.render_tag(attrs, inner_html)
 
 
@@ -39,28 +39,35 @@ class BuildContext:
     """
     TODO: Refactor Build Context More
     """
-    def __init__(self, rendering_context: t.Dict, root_element: 'Element') -> None:
+
+    def __init__(self, rendering_context: t.Dict, root_element: "Element") -> None:
         self.ctx = dict(rendering_context)
         self.root = root_element
 
     def get(self, key: t.Any, default=None) -> t.Optional[t.Any]:
         return self.ctx.get(key, default)
 
-    def add_root_style(self, element: 'Element') -> None:
-        self.ctx.setdefault('root_styles', []).append(element)
+    def add_root_style(self, element: "Element") -> None:
+        self.ctx.setdefault("root_styles", []).append(element)
 
-    def add_bottom_scripts(self, element: 'Element') -> None:
-        self.ctx.setdefault('bottom_scripts', []).append(element)
+    def add_bottom_scripts(self, element: "Element") -> None:
+        self.ctx.setdefault("bottom_scripts", []).append(element)
 
     @classmethod
-    def create_context(cls, rendering_context: t.Dict, root_element: 'Element') -> 'BuildContext':
+    def create_context(
+        cls, rendering_context: t.Dict, root_element: "Element"
+    ) -> "BuildContext":
         return cls(rendering_context, root_element)
 
     @contextmanager
-    def render_with_context(self, element) -> t.Generator['FactoryBuildContext', t.Any, None]:
+    def render_with_context(
+        self, element
+    ) -> t.Generator["FactoryBuildContext", t.Any, None]:
         yield FactoryBuildContext(self.ctx, self.root, element)
 
-    def child_node_context(self, element: t.Any, child: t.Any) -> t.Union[NodeContext, t.List[NodeContext]]:
+    def child_node_context(
+        self, element: t.Any, child: t.Any
+    ) -> t.Union[NodeContext, t.List[NodeContext]]:
         if isinstance(child, Element):
             if isinstance(child, LazyComponent):
                 child.set_context_data(self)
@@ -73,10 +80,7 @@ class BuildContext:
             return NodeContext(parent=element, node_element=child, node_content=content)
 
         if isinstance(child, (list, tuple, Fragment)):
-            return [
-                self.child_node_context(element, child=item)
-                for item in child
-            ]
+            return [self.child_node_context(element, child=item) for item in child]
 
         if callable(child):
             with self.render_with_context(child) as factory_ctx:
@@ -84,14 +88,11 @@ class BuildContext:
 
         return child
 
-    def get_node_context(self, element: t.Union['Element', 'Fragment'], parent: t.Any) -> t.Union[
-        t.List[NodeContext], NodeContext
-    ]:
+    def get_node_context(
+        self, element: t.Union["Element", "Fragment"], parent: t.Any
+    ) -> t.Union[t.List[NodeContext], NodeContext]:
         if isinstance(element, (list, tuple, Fragment)):
-            return [
-                self.child_node_context(parent, child=child)
-                for child in element
-            ]
+            return [self.child_node_context(parent, child=child) for child in element]
 
         content = self.child_node_context(parent, element.content)
         return NodeContext(parent, node_element=element, node_content=content)
@@ -105,7 +106,10 @@ class FactoryBuildContext(BuildContext):
     Resolves Elements and Element Content that requires ctx object passed to it.
     It also ensures the scope of the ctx passed maintained and expires when down.
     """
-    def __init__(self, rendering_context: t.Dict, root_element: 'Element', element) -> None:
+
+    def __init__(
+        self, rendering_context: t.Dict, root_element: "Element", element
+    ) -> None:
         super().__init__({}, root_element)
         self.ctx = rendering_context
         self.element_factory = element
@@ -119,7 +123,7 @@ class FactoryBuildContext(BuildContext):
         return self.get_node_context(content, parent=parent)
 
 
-def render_component(element: t.Union['Element', t.Any], ctx: t.Dict) -> str:
+def render_component(element: t.Union["Element", t.Any], ctx: t.Dict) -> str:
     build_context = BuildContext.create_context(ctx, root_element=element)
     root_node = build_context.build_context()
 
@@ -344,6 +348,7 @@ class LazyComponent(BaseElement):
     """
     Defers NodeContext computation till during rendering
     """
+
     content: t.Any = None
 
     def __init__(self, resolver: t.Callable, **attrs) -> None:
@@ -357,8 +362,12 @@ class LazyComponent(BaseElement):
     def set_context_data(self, ctx: BuildContext) -> None:
         self._ctx = ctx
 
-    def resolve_lazy_element(self, parent: t.Optional['Element'] = None) -> t.Union[NodeContext, t.List[NodeContext]]:
-        assert self._ctx is not None, "please set_context_data() before resolving element."
+    def resolve_lazy_element(
+        self, parent: t.Optional["Element"] = None
+    ) -> t.Union[NodeContext, t.List[NodeContext]]:
+        assert (
+            self._ctx is not None
+        ), "please set_context_data() before resolving element."
 
         element = self._resolver()
         return self._ctx.child_node_context(parent, element)
@@ -377,6 +386,7 @@ class Component:
     """
     Provide dynamic content through `resolve_content` method.
     """
+
     @abstractmethod
     def resolve_content(self) -> t.Union[Fragment, Element]:
         pass
