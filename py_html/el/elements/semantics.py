@@ -18,16 +18,18 @@ class Style(BaseHTML):
         self.content = content
 
     def render_content(self, content: t.Any, ctx: NodeContext) -> str:
-        if isinstance(content, (dict, StyleCSS)):
-            ensure_style_css = StyleCSS(**content)
+        for item in content:
+            if isinstance(item, (dict, StyleCSS)):
+                ensure_style_css = StyleCSS(**item)
 
-            inner_html = " ".join(
-                (
-                    f"{k} " + "{" + f"{v.render()}" + "}"
-                    for k, v in ensure_style_css.items()
+                inner_html = " ".join(
+                    (
+                        f"{k} " + "{" + f"{v.render()}" + "}"
+                        for k, v in ensure_style_css.items()
+                    )
                 )
-            )
-            return inner_html
+
+                return inner_html
         return ctx.get_content(content)
 
 

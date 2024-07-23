@@ -29,6 +29,9 @@ fmt format:clean ## Run code formatters
 	ruff format py_html
 	ruff check --fix py_html
 
+ruff-fix: ## Run Ruff fixer
+	ruff check py_html --fix --unsafe-fixes
+
 test:clean ## Run tests
 	pytest
 

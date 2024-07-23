@@ -102,6 +102,7 @@ class BAvatar(el.BaseElement, Component):
                 content=self.badge,
                 variant=self.badge_variant,
                 position=self.badge_position,
+                style=StyleCSS(font_size=f"calc({self.size} * 0.28)"),
             )
             if self.badge
             else el.Comment(),
@@ -201,8 +202,8 @@ class _BAvatarGroupInner(el.Div):
             return StyleCSS(padding_left=formular, padding_right=formular)
         return StyleCSS()
 
-    def render_content(self, content: t.Any, ctx: NodeContext) -> str:
-        for node in list(content) if isinstance(content, (list, tuple)) else [content]:
+    def render_content(self, content: Fragment, ctx: NodeContext) -> str:
+        for node in content:
             if isinstance(node.element, BAvatar):
                 if self.size:
                     node.element.size = self.size

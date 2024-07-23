@@ -26,7 +26,7 @@ def template():
     content = BootstrapHTML(
         content=[
             el.Body(
-                content=lambda ctx: el.Fragment(
+                content=el.Fragment(
                     """
                     <div class="container-fluid">
                       <h1>My First Bootstrap Page</h1>
@@ -66,7 +66,7 @@ def template():
                         content=(
                             el.H1(content="Avatars Examples"),
                             el.Div(class_name="mt-2", content=(
-                                BAvatar(text="Foo", class_name="mx-2", size="72px"),
+                                lambda ctx: BAvatar(text="Foo", class_name="mx-2", size="72px"),
                                 BAvatar(icon="people-fill", class_name="mx-2", size="72px"),
                                 BAvatar(
                                     icon="people-fill",
@@ -76,7 +76,7 @@ def template():
                                     variant="primary",
                                     badge_variant="dark"
                                 ),
-                                BAvatar(
+                                lambda ctx: BAvatar(
                                     icon="people-fill",
                                     class_name="mx-2",
                                     size="45px",
@@ -102,7 +102,7 @@ def template():
                                             variant="primary",
                                             badge_variant="dark"
                                         ),
-                                        BAvatar(
+                                        lambda ctx: BAvatar(
                                             icon="people-fill",
                                             size="45px",
                                             badge=BIcon(icon_name="exclamation-circle-fill", variant="warning"),

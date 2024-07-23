@@ -9,27 +9,38 @@ from py_html.styles.utils import snake_to_kebab
 
 
 class NodeContext:
-    def __init__(
-        self, parent: t.Any, node_element: "Element", node_content: t.Any
-    ) -> None:
+    def __init__(self, node_element: "Element", node_content: t.Any) -> None:
         self.node_element = node_element
-        self.parent_element = parent
         self.node_content = node_content
 
-    def get_content(self, item: t.Any) -> str:
-        if item is None or type(item) is bool:
-            return ""
+    @property
+    def element(self) -> "Element":
+        return self.node_element
 
+    def get_content(self, item: t.Any) -> str:
         if isinstance(item, NodeContext):
+            if isinstance(item.node_element, LazyComponent):
+                item.node_content = item.node_element.resolve_lazy_element()
+
+            if isinstance(item.node_element, Component):
+                item.node_content = item.node_element.resolve_content()
+
             return item.render()
 
-        if isinstance(item, (list, tuple)):
+        if isinstance(item, (list, tuple, Fragment, t.Generator)):
             return "".join(self.get_content(child) for child in item)
+
+        if isinstance(item, Element):
+            node_context = NodeContext(item, item.content)
+            return node_context.render()
+
+        if item is None or type(item) is bool:
+            return ""
 
         return str(item)
 
     def render(self) -> str:
-        inner_html = self.node_element.render_content(self.node_content, self)
+        inner_html = self.node_element.render_content(Fragment(self.node_content), self)
         attrs = self.node_element.render_attributes(self)
 
         return self.node_element.render_tag(attrs, inner_html)
@@ -66,36 +77,32 @@ class BuildContext:
         yield FactoryBuildContext(self.ctx, self.root, element)
 
     def child_node_context(
-        self, element: t.Any, child: t.Any
+        self, child: t.Any
     ) -> t.Union[NodeContext, t.List[NodeContext]]:
         if isinstance(child, Element):
-            if isinstance(child, LazyComponent):
-                child.set_context_data(self)
-
             if isinstance(child, Component):
-                content = self.child_node_context(child, child.resolve_content())
                 child.exports(self)
-            else:
-                content = self.child_node_context(child, child.content)
-            return NodeContext(parent=element, node_element=child, node_content=content)
 
-        if isinstance(child, (list, tuple, Fragment)):
-            return [self.child_node_context(element, child=item) for item in child]
+            content = self.child_node_context(child.content)
+            return NodeContext(node_element=child, node_content=content)
+
+        if isinstance(child, (list, tuple, Fragment, t.Generator)):
+            return [self.child_node_context(child=item) for item in child]
 
         if callable(child):
             with self.render_with_context(child) as factory_ctx:
-                return factory_ctx.build_context(parent=element)
+                return factory_ctx.build_context()
 
         return child
 
     def get_node_context(
         self, element: t.Union["Element", "Fragment"], parent: t.Any
     ) -> t.Union[t.List[NodeContext], NodeContext]:
-        if isinstance(element, (list, tuple, Fragment)):
-            return [self.child_node_context(parent, child=child) for child in element]
+        if isinstance(element, (list, tuple, Fragment, t.Generator)):
+            return [self.child_node_context(child=child) for child in element]
 
-        content = self.child_node_context(parent, element.content)
-        return NodeContext(parent, node_element=element, node_content=content)
+        content = self.child_node_context(element.content)
+        return NodeContext(node_element=element, node_content=content)
 
     def build_context(self, parent=None) -> t.Union[NodeContext, t.List[NodeContext]]:
         return self.get_node_context(self.root, parent=parent)
@@ -332,16 +339,20 @@ class BaseHTML(BaseElement):
 
 
 class Fragment:
-    def __init__(self, *contents: t.Union[Element, t.Any]) -> None:
+    def __init__(self, *contents: t.Union["Fragment", "Element", t.Any]) -> None:
         self.content = list(contents)
 
+    def resolve_content(self, content) -> t.Generator:
+        for item in content:
+            if isinstance(item, Fragment):
+                yield from self.resolve_content(item.content)
+            elif isinstance(item, (list, tuple, t.Generator)):
+                yield from self.resolve_content(item)
+            else:
+                yield item
+
     def __iter__(self):
-        for item in self.content:
-            if isinstance(item, (Fragment, list, tuple)):
-                for y in item:
-                    yield y
-                continue
-            yield item
+        return self.resolve_content(self.content)
 
 
 class LazyComponent(BaseElement):
@@ -353,24 +364,11 @@ class LazyComponent(BaseElement):
 
     def __init__(self, resolver: t.Callable, **attrs) -> None:
         self.tag = "lazy-component"
-
         super(LazyComponent, self).__init__(**attrs)
-
         self._resolver = resolver
-        self._ctx: t.Optional[BuildContext] = None
 
-    def set_context_data(self, ctx: BuildContext) -> None:
-        self._ctx = ctx
-
-    def resolve_lazy_element(
-        self, parent: t.Optional["Element"] = None
-    ) -> t.Union[NodeContext, t.List[NodeContext]]:
-        assert (
-            self._ctx is not None
-        ), "please set_context_data() before resolving element."
-
-        element = self._resolver()
-        return self._ctx.child_node_context(parent, element)
+    def resolve_lazy_element(self) -> t.Union[NodeContext, t.List[NodeContext]]:
+        return self._resolver()
 
     def render_tag(self, attrs: str, inner_html: str) -> str:
         if attrs:
@@ -378,7 +376,7 @@ class LazyComponent(BaseElement):
         return inner_html
 
     def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
-        resolved_content = self.resolve_lazy_element(ctx.parent_element)
+        resolved_content = self.resolve_lazy_element()
         return ctx.get_content(resolved_content)
 
 
