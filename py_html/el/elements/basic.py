@@ -8,7 +8,7 @@ class DOCTYPE(Element):
         self.content = page_content
 
     def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
-        return ctx.get_content(content)
+        return ctx.render_content(content)
 
     def render_tag(self, attrs: str, inner_html: str):
         # html = ctx.render_content(self.content)

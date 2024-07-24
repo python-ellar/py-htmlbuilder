@@ -3,6 +3,7 @@ import typing as t
 import py_html.el as el
 from py_html.contrib.bootstrap._types import BVariants
 from py_html.contrib.bootstrap.util import apply_classes
+from py_html.el.base import NodeContext
 
 
 class BBadge(el.BaseHTML):
@@ -13,11 +14,15 @@ class BBadge(el.BaseHTML):
         tag: str = "span",
         variant: t.Optional[BVariants] = "secondary",
         pill: bool = False,
-        class_name: t.Optional[str] = "",
         **attrs,
     ):
         self.tag = tag
         self.variant = variant
+        self.pill = pill
 
-        class_name = class_name or "" + apply_classes(bg=variant, badge_pill=pill)
-        super().__init__(class_name=class_name, **attrs)
+        super().__init__(**attrs)
+
+    def render_attributes(self, ctx: NodeContext) -> str:
+        self.class_name += "" + apply_classes(bg=self.variant, badge_pill=self.pill)
+
+        return super().render_attributes(ctx)

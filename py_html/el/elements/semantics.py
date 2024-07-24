@@ -30,7 +30,7 @@ class Style(BaseHTML):
                 )
 
                 return inner_html
-        return ctx.get_content(content)
+        return ctx.render_content(content)
 
 
 class Div(BaseHTML):

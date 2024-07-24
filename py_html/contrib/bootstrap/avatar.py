@@ -4,8 +4,8 @@ import py_html.el as el
 from py_html.contrib.bootstrap._types import BVariants
 from py_html.contrib.bootstrap.icon import BIcon
 from py_html.contrib.bootstrap.util import apply_classes
-from py_html.el import Element, Fragment
-from py_html.el.base import BuildContext, Component, NodeContext
+from py_html.el import Fragment
+from py_html.el.base import NodeContext
 from py_html.styles import StyleCSS
 
 avatar_style = el.Style(
@@ -30,7 +30,7 @@ avatar_style = el.Style(
 )
 
 
-class BAvatar(el.BaseElement, Component):
+class BAvatar(el.BaseElement):
     class_name = "b-avatar"
 
     def __init__(
@@ -46,7 +46,6 @@ class BAvatar(el.BaseElement, Component):
         rounded: t.Literal["circle", "square"] = "circle",
         icon: t.Optional[str] = None,
         text: t.Optional[str] = None,
-        content: t.Optional[t.Any] = None,
         **attrs,
     ):
         self.tag = tag
@@ -58,17 +57,13 @@ class BAvatar(el.BaseElement, Component):
         self.badge_variant = badge_variant
         self.rounded = rounded
         self.size = size
-        self.slot = content
 
         if not self.icon and not self.text:
             self.icon = "people-fill"
 
         super().__init__(**attrs)
 
-    def exports(self, ctx: BuildContext) -> None:
-        ctx.add_root_style(avatar_style)
-
-    def resolve_content(self) -> t.Union[Fragment, Element]:
+    def render_content(self, content: t.Any, ctx: NodeContext) -> str:
         self.class_name = (
             self.class_name
             + " "
@@ -78,7 +73,7 @@ class BAvatar(el.BaseElement, Component):
         if self.size:
             self.style.update_style(width=self.size, height=self.size)
 
-        return el.Fragment(
+        element = el.Fragment(
             BAvatarText(
                 content=self.text,
                 style=StyleCSS(font_size=f"calc({self.size} * 0.4)")
@@ -106,8 +101,9 @@ class BAvatar(el.BaseElement, Component):
             )
             if self.badge
             else el.Comment(),
-            self.slot,
+            content,
         )
+        return ctx.render_content(element)
 
 
 class BAvatarText(el.Span):
@@ -203,7 +199,7 @@ class _BAvatarGroupInner(el.Div):
         return StyleCSS()
 
     def render_content(self, content: Fragment, ctx: NodeContext) -> str:
-        for node in content:
+        for node in content or []:
             if isinstance(node.element, BAvatar):
                 if self.size:
                     node.element.size = self.size
@@ -219,7 +215,7 @@ class _BAvatarGroupInner(el.Div):
                 if self.variant:
                     node.element.variant = self.variant
 
-        return ctx.get_content(content)
+        return ctx.render_content(content)
 
     def render_attributes(self, ctx: NodeContext) -> str:
         self.style = StyleCSS(**(self.style or {}), **self.get_parent_style())
