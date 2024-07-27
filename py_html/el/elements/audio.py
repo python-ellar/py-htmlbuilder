@@ -8,6 +8,7 @@ class Audio(BaseHTML):
 
     def __init__(
         self,
+        *content,
         auto_play: t.Optional[bool] = None,
         controls: t.Optional[bool] = None,
         loop: t.Optional[bool] = None,
@@ -17,6 +18,7 @@ class Audio(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             autoplay=auto_play,
             controls=controls,
             loop=loop,
@@ -32,6 +34,7 @@ class Source(BaseHTML):
 
     def __init__(
         self,
+        *content,
         media: t.Optional[t.Any] = None,
         sizes: t.Optional[t.Any] = None,
         type: t.Optional[
@@ -47,6 +50,7 @@ class Source(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             media=media,
             sizes=sizes,
             type=type,
@@ -61,6 +65,7 @@ class Track(BaseHTML):
 
     def __init__(
         self,
+        *content,
         default: t.Optional[bool] = None,
         kind: t.Optional[
             t.Literal[
@@ -77,6 +82,7 @@ class Track(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             default=default,
             kind=kind,
             label=label,
@@ -91,12 +97,14 @@ class Video(Audio):
 
     def __init__(
         self,
+        *content,
         poster: t.Optional[str] = None,
         height: t.Optional[str] = None,
         width: t.Optional[str] = None,
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             poster=poster,
             height=height,
             width=width,

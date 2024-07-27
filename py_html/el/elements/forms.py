@@ -8,6 +8,7 @@ class Form(BaseHTML):
 
     def __init__(
         self,
+        *content,
         accept_charset: t.Optional[t.Union[t.Literal["UTF-8", "ISO-8859-1"]]] = None,
         action: t.Optional[str] = None,
         autocomplete: t.Optional[t.Union[t.Literal["on", "off"]]] = None,
@@ -46,6 +47,7 @@ class Form(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             acceptcharset=accept_charset,
             action=action,
             autocomplete=autocomplete,
@@ -64,6 +66,7 @@ class Input(BaseHTML):
 
     def __init__(
         self,
+        *content,
         type: t.Literal[
             "button",
             "checkbox",
@@ -136,6 +139,7 @@ class Input(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             type=type,
             accept=accept,
             alt=alt,
@@ -178,6 +182,7 @@ class TextArea(BaseHTML):
 
     def __init__(
         self,
+        *content,
         auto_focus: t.Optional[bool] = None,
         cols: t.Optional[int] = None,
         disabled: t.Optional[bool] = None,
@@ -192,6 +197,7 @@ class TextArea(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             autofocus=auto_focus,
             cols=cols,
             disabled=disabled,
@@ -212,6 +218,7 @@ class Button(BaseHTML):
 
     def __init__(
         self,
+        *content,
         auto_focus: t.Optional[bool] = None,
         disabled: t.Optional[bool] = None,
         form: t.Optional[t.Any] = None,
@@ -239,6 +246,7 @@ class Button(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             autofocus=auto_focus,
             name=name,
             disabled=disabled,
@@ -261,6 +269,7 @@ class Select(BaseHTML):
 
     def __init__(
         self,
+        *content,
         auto_focus: t.Optional[bool] = None,
         disabled: t.Optional[bool] = None,
         form: t.Optional[t.Any] = None,
@@ -271,6 +280,7 @@ class Select(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             autofocus=auto_focus,
             name=name,
             disabled=disabled,
@@ -287,11 +297,13 @@ class OptGroup(BaseHTML):
 
     def __init__(
         self,
+        *content,
         label: t.Optional[str] = None,
         disabled: t.Optional[bool] = None,
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             label=label,
             disabled=disabled,
             **attrs,
@@ -303,6 +315,7 @@ class Option(BaseHTML):
 
     def __init__(
         self,
+        *content,
         label: t.Optional[str] = None,
         disabled: t.Optional[bool] = None,
         selected: t.Optional[bool] = None,
@@ -310,6 +323,7 @@ class Option(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             label=label,
             disabled=disabled,
             selected=selected,
@@ -323,6 +337,7 @@ class Label(BaseHTML):
 
     def __init__(
         self,
+        *content,
         for_: t.Optional[str] = None,
         form: t.Optional[str] = None,
         **attrs,
@@ -336,12 +351,13 @@ class FieldSet(BaseHTML):
 
     def __init__(
         self,
+        *content,
         name: t.Optional[str] = None,
         disabled: t.Optional[bool] = None,
         form: t.Optional[t.Any] = None,
         **attrs,
     ) -> None:
-        super().__init__(name=name, disabled=disabled, form=form, **attrs)
+        super().__init__(*content, name=name, disabled=disabled, form=form, **attrs)
 
 
 class Legend(BaseHTML):
@@ -357,7 +373,8 @@ class Output(Label):
 
     def __init__(
         self,
+        *content,
         name: t.Optional[str] = None,
         **attrs,
     ) -> None:
-        super().__init__(name=name, **attrs)
+        super().__init__(*content, name=name, **attrs)

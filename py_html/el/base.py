@@ -7,7 +7,7 @@ from py_html.styles.utils import snake_to_kebab
 
 
 class NodeContext:
-    def __init__(self, element: "Element", content: t.Any) -> None:
+    def __init__(self, element: "Element", *content: t.Any) -> None:
         self._element = element
         self._content = content
 
@@ -31,7 +31,7 @@ class NodeContext:
             return "".join(self.render_content(child) for child in item)
 
         if isinstance(item, Element):
-            node_ctx = NodeContext(item, item.content)
+            node_ctx = NodeContext(item, *item.content)
             return node_ctx.render()
 
         if item is None or type(item) is bool:
@@ -81,7 +81,7 @@ class BuildContext:
                 child.exports(self)
 
             content = self.child_node_context(child.content)
-            return NodeContext(element=child, content=content)
+            return NodeContext(child, *content)
 
         if isinstance(child, (list, tuple, Fragment, t.Generator)):
             return [self.child_node_context(child=item) for item in child]
@@ -99,7 +99,7 @@ class BuildContext:
             return [self.child_node_context(child=child) for child in element]
 
         content = self.child_node_context(element.content)
-        return NodeContext(element=element, content=content)
+        return NodeContext(element, *content)
 
     def build_context(
         self, element: t.Union["Element", t.Any]
@@ -139,16 +139,18 @@ def render_component(element: t.Union["Element", t.Any], ctx: t.Dict) -> str:
 
 
 class Element(ABC):
-    content = None
+    content = ()
     attrs: t.Dict = {}
 
     @abstractmethod
     def render_tag(self, attrs: str, inner_html: str) -> str:
         """Render element"""
 
-    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
-        """Dynamic set or modify Element Properties before render"""
-        return ctx.render_content(content)
+    def render_content(
+        self, children: t.Optional[t.List[NodeContext]], parent: NodeContext
+    ) -> str:
+        """Dynamic content before rendering them"""
+        return parent.render_content(children)
 
     def render_attributes(self, ctx: NodeContext) -> str:
         rendered_attrs = []
@@ -189,7 +191,7 @@ class BaseElement(Element):
 
     def __init__(
         self,
-        content: t.Optional[t.Any] = None,
+        *content: t.Any,
         id: t.Optional[t.Any] = None,
         title: t.Optional[t.Any] = None,
         class_name: t.Optional[t.Any] = None,
@@ -280,6 +282,7 @@ class BaseHTML(BaseElement):
 
     def __init__(
         self,
+        *content,
         onclick: t.Optional[t.Any] = None,
         ondblclick: t.Optional[t.Any] = None,
         onmousedown: t.Optional[t.Any] = None,
@@ -308,6 +311,7 @@ class BaseHTML(BaseElement):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             onclick=onclick,
             ondblclick=ondblclick,
             onmousedown=onmousedown,
@@ -359,7 +363,7 @@ class LazyComponent(BaseElement):
     Defers NodeContext computation till during rendering
     """
 
-    content: t.Any = None
+    content: t.Any = ()
 
     def __init__(self, resolver: t.Callable, **attrs) -> None:
         self.tag = "lazy-component"
@@ -374,9 +378,11 @@ class LazyComponent(BaseElement):
             return f"<div {attrs}>{inner_html}</div>"
         return inner_html
 
-    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
+    def render_content(
+        self, children: t.Optional[t.List[NodeContext]], parent: NodeContext
+    ) -> str:
         resolved_content = self.resolve_lazy_element()
-        return ctx.render_content(resolved_content)
+        return parent.render_content(resolved_content)
 
 
 class Component:

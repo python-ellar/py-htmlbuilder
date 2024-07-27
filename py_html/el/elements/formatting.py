@@ -14,8 +14,8 @@ class Address(BaseHTML):
 class BlockQuote(BaseHTML):
     tag = "blockquote"
 
-    def __init__(self, cite: typing.Optional[str] = None, **attrs) -> None:
-        super().__init__(cite=cite, **attrs)
+    def __init__(self, *content, cite: typing.Optional[str] = None, **attrs) -> None:
+        super().__init__(*content, cite=cite, **attrs)
 
 
 class Q(BlockQuote):
@@ -31,11 +31,12 @@ class Del(BaseHTML):
 
     def __init__(
         self,
+        *content,
         cite: typing.Optional[str] = None,
         datetime: typing.Optional[str] = None,
         **attrs,
     ) -> None:
-        super().__init__(cite=cite, datetime=datetime, **attrs)
+        super().__init__(*content, cite=cite, datetime=datetime, **attrs)
 
 
 class Dfn(BaseHTML):
@@ -67,6 +68,7 @@ class Meter(BaseHTML):
 
     def __init__(
         self,
+        *content,
         form: typing.Optional[str] = None,
         high: typing.Optional[int] = None,
         low: typing.Optional[int] = None,
@@ -77,6 +79,7 @@ class Meter(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             form=form,
             high=high,
             low=low,
@@ -97,11 +100,12 @@ class Progress(BaseHTML):
 
     def __init__(
         self,
+        *content,
         max: typing.Optional[int] = None,
         value: typing.Optional[int] = None,
         **attrs,
     ) -> None:
-        super().__init__(max=max, value=value, **attrs)
+        super().__init__(*content, max=max, value=value, **attrs)
 
 
 class Rp(BaseHTML):

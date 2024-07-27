@@ -8,6 +8,7 @@ class BAlert(el.BaseHTML):
 
     def __init__(
         self,
+        *content,
         tag: str = "div",
         alert: BVariants = "primary",
         **attrs,
@@ -17,7 +18,7 @@ class BAlert(el.BaseHTML):
         self.tag = tag
         self.class_name = f"alert alert-{alert}"
 
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
 
 
 class BAlertLink(el.BaseHTML):
@@ -25,8 +26,9 @@ class BAlertLink(el.BaseHTML):
 
     def __init__(
         self,
+        *content,
         tag: str = "a",
         **attrs,
     ):
         self.tag = tag
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)

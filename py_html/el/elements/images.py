@@ -178,6 +178,7 @@ class Use(BaseHTML):
 
     def __init__(
         self,
+        *content,
         href: t.Optional[str] = None,
         xlink_href: t.Optional[t.Any] = None,
         x: t.Optional[t.Any] = None,
@@ -186,8 +187,9 @@ class Use(BaseHTML):
         width: t.Optional[t.Any] = None,
         **attrs,
     ) -> None:
-        attrs.update({"content": None, "xlink:href": xlink_href})
+        attrs.update({"content": (), "xlink:href": xlink_href})
         super().__init__(
+            *content,
             height=height,
             width=width,
             href=href,

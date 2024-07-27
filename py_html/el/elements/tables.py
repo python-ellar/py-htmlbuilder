@@ -16,6 +16,7 @@ class Th(BaseHTML):
 
     def __init__(
         self,
+        *content,
         abbr: t.Optional[str] = None,
         colspan: t.Optional[int] = None,
         headers: t.Optional[str] = None,
@@ -24,6 +25,7 @@ class Th(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             abbr=abbr,
             colspan=colspan,
             headers=headers,
@@ -42,12 +44,15 @@ class Td(BaseHTML):
 
     def __init__(
         self,
+        *content,
         colspan: t.Optional[int] = None,
         headers: t.Optional[str] = None,
         rowspan: t.Optional[int] = None,
         **attrs,
     ) -> None:
-        super().__init__(colspan=colspan, headers=headers, rowspan=rowspan, **attrs)
+        super().__init__(
+            *content, colspan=colspan, headers=headers, rowspan=rowspan, **attrs
+        )
 
 
 class Thead(BaseHTML):
@@ -65,8 +70,8 @@ class Tfoot(BaseHTML):
 class Col(BaseHTML):
     tag = "col"
 
-    def __init__(self, span: t.Optional[int] = None, **attrs) -> None:
-        super().__init__(span=span, **attrs)
+    def __init__(self, *content, span: t.Optional[int] = None, **attrs) -> None:
+        super().__init__(*content, span=span, **attrs)
 
 
 class ColGroup(Col):

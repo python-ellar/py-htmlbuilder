@@ -19,42 +19,52 @@ class BreadcrumbItem(t.TypedDict, total=False):
     target: aTarget
 
 
-class BBreadcrumb(el.Ol):
+class BBreadcrumb(el.ol):
     class_name = "breadcrumb"
 
-    def __init__(self, *items: BreadcrumbItem, **attrs) -> None:
-        super().__init__(**attrs)
+    def __init__(
+        self, *content: t.Any, items: t.Optional[t.List[BreadcrumbItem]] = None, **attrs
+    ) -> None:
+        super().__init__(*content, **attrs)
         self.items = items
         if self.items and self.content:
             raise Exception("Invalid Configuration. Use 'Items' or 'Content'")
 
-    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
+    def render_content(
+        self, children: t.Optional[t.List[NodeContext]], parent: NodeContext
+    ) -> str:
         if self.items:
-            return ctx.render_content(self._get_breadcrumb_item_elements())
-        return ctx.render_content(content)
+            return parent.render_content(self._get_breadcrumb_item_elements())
+        return parent.render_content(children)
 
-    def _get_breadcrumb_item_elements(self) -> el.Fragment:
-        return el.Fragment(
+    def _get_breadcrumb_item_elements(self) -> el.fragment:
+        assert self.items
+        return el.fragment(
             *(
                 BBreadcrumbItem(
+                    item["text"],
                     href=item.get("href", "#"),
                     active=item.get("active", False),
                     target=item.get("target", "_self"),
-                    content=item["text"],
                 )
                 for item in self.items
             )
         )
 
 
-class BBreadcrumbItem(el.Li):
+class BBreadcrumbItem(el.li):
     class_name = "breadcrumb-item"
 
     def __init__(
-        self, target: aTarget = "_self", active: bool = False, href: str = "#", **attrs
+        self,
+        *content: t.Any,
+        target: aTarget = "_self",
+        active: bool = False,
+        href: str = "#",
+        **attrs,
     ) -> None:
         attrs.setdefault("aria_current", "location")
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
 
         self.href = href
         self.target = target
@@ -62,10 +72,10 @@ class BBreadcrumbItem(el.Li):
 
         self.class_name += apply_classes(active=active)
 
-    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
+    def render_content(
+        self, children: t.Optional[t.List[NodeContext]], parent: NodeContext
+    ) -> str:
         if self.active:
-            return ctx.render_content(el.Span(content=content))
+            return parent.render_content(el.span(children))
 
-        return ctx.render_content(
-            el.A(href=self.href, content=content, target=self.target)
-        )
+        return parent.render_content(el.a(children, href=self.href, target=self.target))

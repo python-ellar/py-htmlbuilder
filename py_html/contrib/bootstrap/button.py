@@ -30,6 +30,7 @@ class BButton(el.BaseHTML):
 
     def __init__(
         self,
+        *content: t.Any,
         tag: str = "button",
         disabled: bool = False,
         pill: bool = False,
@@ -51,7 +52,7 @@ class BButton(el.BaseHTML):
         self.disabled = disabled
         self.pressed = pressed
 
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
 
     def render_attributes(self, ctx: NodeContext) -> str:
         self.class_name += apply_classes(
@@ -76,6 +77,7 @@ class BButtonGroup(el.BaseHTML):
 
     def __init__(
         self,
+        *content: t.Any,
         tag: str = "div",
         squared: bool = False,
         size: t.Literal["sm", "md", "lg"] = "sm",
@@ -89,13 +91,15 @@ class BButtonGroup(el.BaseHTML):
         self.size = size
         self.squared = squared
 
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
 
         if self.vertical:
             self.class_name.replace(self.__class__.class_name, "btn-group-vertical")
 
-    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
-        for node in content or []:
+    def render_content(
+        self, children: t.Optional[t.List[NodeContext]], parent: NodeContext
+    ) -> str:
+        for node in children or []:
             if isinstance(node.element, BButton):
                 if self.size:
                     node.element.size = self.size
@@ -103,13 +107,13 @@ class BButtonGroup(el.BaseHTML):
                 if self.squared:
                     node.element.squared = self.squared
 
-        return ctx.render_content(content)
+        return parent.render_content(children)
 
 
 class BButtonToolbar(el.BaseHTML):
     class_name = "btn-toolbar"
     role = "toolbar"
 
-    def __init__(self, tag: str = "div", **attrs) -> None:
+    def __init__(self, *content: t.Any, tag: str = "div", **attrs) -> None:
         self.tag = tag
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)

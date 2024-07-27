@@ -1,17 +1,26 @@
 import typing as t
 
 import py_html.el as el
+from py_html.contrib.bootstrap._types import BVariants
 from py_html.contrib.bootstrap.util import apply_classes
 
 
 class BContainer(el.BaseHTML):
     class_name = "container"
 
-    def __init__(self, tag: str = "div", fluid: bool = False, **attrs):
+    def __init__(
+        self,
+        *content,
+        bg: t.Optional[BVariants] = None,
+        tag: str = "div",
+        fluid: bool = False,
+        **attrs,
+    ):
         self.tag = tag
         self.class_name = "container-fluid" if fluid else "container"
 
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
+        self.class_name += apply_classes(bg=bg)
 
 
 class BRow(el.BaseHTML):
@@ -19,6 +28,7 @@ class BRow(el.BaseHTML):
 
     def __init__(
         self,
+        *content,
         tag: str = "div",
         justify_content: t.Optional[
             t.Literal["start", "center", "end", "around", "between"]
@@ -39,7 +49,7 @@ class BRow(el.BaseHTML):
         **attrs,
     ):
         self.tag = tag
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
 
         self.class_name += apply_classes(
             justify_content=justify_content,
@@ -60,6 +70,7 @@ class BRow(el.BaseHTML):
 class BCol(el.BaseHTML):
     def __init__(
         self,
+        *content,
         tag: str = "div",
         cols: t.Optional[t.Union[str, int]] = None,
         col: bool = False,
@@ -84,7 +95,7 @@ class BCol(el.BaseHTML):
         **attrs,
     ):
         self.tag = tag
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
 
         self.class_name = self.class_name or "" + apply_classes(
             col=cols if cols else col or True,

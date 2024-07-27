@@ -8,6 +8,7 @@ class Script(BaseElement):
 
     def __init__(
         self,
+        *content,
         async_: t.Optional[bool] = None,
         cross_origin: t.Optional[t.Literal["anonymous", "use-credentials"]] = None,
         no_module: t.Optional[t.Literal["true", "false"]] = None,
@@ -34,6 +35,7 @@ class Script(BaseElement):
             }
         )
         super().__init__(
+            *content,
             nomodule=no_module,
             crossorigin=cross_origin,
             defer=defer,

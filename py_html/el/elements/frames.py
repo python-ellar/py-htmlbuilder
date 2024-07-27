@@ -8,6 +8,7 @@ class IFrame(BaseHTML):
 
     def __init__(
         self,
+        *content,
         allow: t.Optional[bool] = None,
         allow_fullscreen: t.Optional[t.Literal["true", "false"]] = None,
         allow_payment_request: t.Optional[t.Literal["true", "false"]] = None,
@@ -41,6 +42,7 @@ class IFrame(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             allow=allow,
             allowfullscreen=allow_fullscreen,
             allowpaymentrequest=allow_payment_request,

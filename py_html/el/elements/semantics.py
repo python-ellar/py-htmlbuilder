@@ -9,16 +9,17 @@ class Style(BaseHTML):
 
     def __init__(
         self,
-        content: t.Union[t.Dict[str, StyleCSS], t.Any],
+        *content: t.Union[t.Dict[str, StyleCSS], t.Any],
         type: str = "text/css",
         media: t.Optional[str] = None,
         **attrs,
     ) -> None:
-        super().__init__(type=type, media=media, **attrs)
-        self.content = content
+        super().__init__(*content, type=type, media=media, **attrs)
 
-    def render_content(self, content: t.Any, ctx: NodeContext) -> str:
-        for item in content:
+    def render_content(
+        self, children: t.Optional[t.List[NodeContext]], parent: NodeContext
+    ) -> str:
+        for item in children or []:
             if isinstance(item, (dict, StyleCSS)):
                 ensure_style_css = StyleCSS(**item)
 
@@ -30,7 +31,7 @@ class Style(BaseHTML):
                 )
 
                 return inner_html
-        return ctx.render_content(content)
+        return parent.render_content(children)
 
 
 class Div(BaseHTML):

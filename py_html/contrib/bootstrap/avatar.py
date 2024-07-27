@@ -4,11 +4,10 @@ import py_html.el as el
 from py_html.contrib.bootstrap._types import BVariants
 from py_html.contrib.bootstrap.icon import BIcon
 from py_html.contrib.bootstrap.util import apply_classes
-from py_html.el import Fragment
 from py_html.el.base import NodeContext
 from py_html.styles import StyleCSS
 
-avatar_style = el.Style(
+avatar_style = el.style(
     {
         ".b-avatar-testing": StyleCSS(
             display="inline-flex",
@@ -63,7 +62,9 @@ class BAvatar(el.BaseElement):
 
         super().__init__(**attrs)
 
-    def render_content(self, content: t.Any, ctx: NodeContext) -> str:
+    def render_content(
+        self, children: t.Optional[t.List[NodeContext]], parent: NodeContext
+    ) -> str:
         self.class_name = (
             self.class_name
             + " "
@@ -73,17 +74,17 @@ class BAvatar(el.BaseElement):
         if self.size:
             self.style.update_style(width=self.size, height=self.size)
 
-        element = el.Fragment(
+        element = el.fragment(
             BAvatarText(
-                content=self.text,
+                self.text,
                 style=StyleCSS(font_size=f"calc({self.size} * 0.4)")
                 if self.size
                 else None,
             )
             if self.text
             else None,
-            el.Span(
-                content=BIcon(
+            el.span(
+                BIcon(
                     icon_name=self.icon,
                     variant=None,
                 ),
@@ -94,27 +95,28 @@ class BAvatar(el.BaseElement):
             if self.icon
             else None,
             BAvatarBadge(
-                content=self.badge,
+                self.badge,
                 variant=self.badge_variant,
                 position=self.badge_position,
                 style=StyleCSS(font_size=f"calc({self.size} * 0.28)"),
             )
             if self.badge
-            else el.Comment(),
-            content,
+            else el.comment(),
+            *children,
         )
-        return ctx.render_content(element)
+        return parent.render_content(element)
 
 
-class BAvatarText(el.Span):
+class BAvatarText(el.span):
     class_name = "b-avatar-text"
 
 
-class BAvatarBadge(el.Span):
+class BAvatarBadge(el.span):
     class_name = "b-avatar-badge"
 
     def __init__(
         self,
+        *content,
         variant: t.Optional[BVariants] = "secondary",
         position: t.Literal[
             "top-right", "top-left", "bottom-left", "bottom-right"
@@ -126,7 +128,7 @@ class BAvatarBadge(el.Span):
         self.variant = variant
         self.position = position
 
-        super().__init__(class_name=class_name, style=style, **attrs)
+        super().__init__(*content, class_name=class_name, style=style, **attrs)
 
     def render_attributes(self, ctx: NodeContext) -> str:
         position_style = {}
@@ -151,20 +153,20 @@ class BAvatarGroup(el.BaseElement):
 
     def __init__(
         self,
+        *content: t.Any,
         tag: str = "div",
         over_lap: t.Optional[float] = 0.3,
         size: t.Optional[str] = None,
         rounded: t.Optional[t.Literal["circle", "square"]] = None,
         variant: t.Optional[BVariants] = None,
-        content: t.Optional[t.Any] = None,
         **attrs,
     ) -> None:
         self.tag = tag
         attrs.setdefault("role", "group")
 
         super().__init__(
-            content=_BAvatarGroupInner(
-                content=content,
+            _BAvatarGroupInner(
+                *content,
                 size=size,
                 over_lap=over_lap,
                 rounded=rounded,
@@ -174,11 +176,12 @@ class BAvatarGroup(el.BaseElement):
         )
 
 
-class _BAvatarGroupInner(el.Div):
+class _BAvatarGroupInner(el.div):
     class_name = "b-avatar-group-inner"
 
     def __init__(
         self,
+        *content: t.Any,
         size: t.Optional[str] = None,
         over_lap: t.Optional[float] = 0.3,
         rounded: t.Optional[t.Literal["circle", "square"]] = None,
@@ -190,7 +193,7 @@ class _BAvatarGroupInner(el.Div):
         self.variant = variant
         self.overlap = 1 if abs(over_lap) > 1 else abs(over_lap)
 
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
 
     def get_parent_style(self) -> StyleCSS:
         if self.size:
@@ -198,8 +201,10 @@ class _BAvatarGroupInner(el.Div):
             return StyleCSS(padding_left=formular, padding_right=formular)
         return StyleCSS()
 
-    def render_content(self, content: Fragment, ctx: NodeContext) -> str:
-        for node in content or []:
+    def render_content(
+        self, children: t.Optional[t.List[NodeContext]], parent: NodeContext
+    ) -> str:
+        for node in children or []:
             if isinstance(node.element, BAvatar):
                 if self.size:
                     node.element.size = self.size
@@ -215,7 +220,7 @@ class _BAvatarGroupInner(el.Div):
                 if self.variant:
                     node.element.variant = self.variant
 
-        return ctx.render_content(content)
+        return parent.render_content(children)
 
     def render_attributes(self, ctx: NodeContext) -> str:
         self.style = StyleCSS(**(self.style or {}), **self.get_parent_style())

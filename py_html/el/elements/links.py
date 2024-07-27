@@ -8,6 +8,7 @@ class A(BaseHTML):
 
     def __init__(
         self,
+        *content,
         ping: t.Optional[t.Any] = None,
         download: t.Optional[str] = None,
         href: t.Optional[str] = None,
@@ -53,6 +54,7 @@ class A(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             ping=ping,
             download=download,
             href=href,
@@ -71,6 +73,7 @@ class Link(BaseHTML):
 
     def __init__(
         self,
+        *content,
         cross_origin: t.Optional[t.Literal["anonymous", "use-credentials"]] = None,
         sizes: t.Optional[t.Any] = None,
         href: t.Optional[str] = None,
@@ -94,7 +97,7 @@ class Link(BaseHTML):
                 "search",
                 "stylesheet",
             ]
-        ] = None,
+        ] = "stylesheet",
         type: t.Optional[t.Any] = None,
         referrer_policy: t.Optional[
             t.Literal[
@@ -110,6 +113,7 @@ class Link(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             crossorigin=cross_origin,
             sizes=sizes,
             href=href,

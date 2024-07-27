@@ -8,6 +8,7 @@ class Meta(BaseElement):
 
     def __init__(
         self,
+        *args,
         charset: t.Optional[t.Union[t.Literal["utf-8"], t.Any]] = None,
         content: t.Optional[str] = None,
         http_equiv: t.Optional[
@@ -28,7 +29,7 @@ class Meta(BaseElement):
         **attrs,
     ) -> None:
         attrs.update({"http-equiv": http_equiv})
-        super().__init__(charset=charset, name=name, **attrs)
+        super().__init__(*args, charset=charset, name=name, **attrs)
         self.attrs.update(content=content)
 
     def render_tag(self, attrs: str, inner_html: str) -> str:
@@ -40,8 +41,9 @@ class Base(BaseHTML):
 
     def __init__(
         self,
+        *content,
         href: t.Optional[t.Any] = None,
         target: t.Optional[t.Literal["_blank", "_parent", "_self", "_top"]] = None,
         **attrs,
     ) -> None:
-        super().__init__(href=href, target=target, **attrs)
+        super().__init__(*content, href=href, target=target, **attrs)

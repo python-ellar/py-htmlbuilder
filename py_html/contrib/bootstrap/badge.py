@@ -11,6 +11,7 @@ class BBadge(el.BaseHTML):
 
     def __init__(
         self,
+        *content,
         tag: str = "span",
         variant: t.Optional[BVariants] = "secondary",
         pill: bool = False,
@@ -20,7 +21,7 @@ class BBadge(el.BaseHTML):
         self.variant = variant
         self.pill = pill
 
-        super().__init__(**attrs)
+        super().__init__(*content, **attrs)
 
     def render_attributes(self, ctx: NodeContext) -> str:
         self.class_name += "" + apply_classes(bg=self.variant, badge_pill=self.pill)

@@ -1,18 +1,6 @@
 import typing as t
 
-from py_html.el.base import BaseElement, BaseHTML, Element, NodeContext
-
-
-class DOCTYPE(Element):
-    def __init__(self, page_content: t.Any) -> None:
-        self.content = page_content
-
-    def render_content(self, content: t.Any, ctx: NodeContext) -> t.Any:
-        return ctx.render_content(content)
-
-    def render_tag(self, attrs: str, inner_html: str):
-        # html = ctx.render_content(self.content)
-        return f"<!DOCTYPE html>{inner_html}"
+from py_html.el.base import BaseElement, BaseHTML, Element
 
 
 class Html(BaseElement):
@@ -20,11 +8,16 @@ class Html(BaseElement):
 
     def __init__(
         self,
+        *content: t.Any,
         lang: t.Optional[str] = None,
         xmlns: str = "http://www.w3.org/1999/xhtml",
         **attrs,
     ) -> None:
-        super().__init__(lang=lang, xmlns=xmlns, **attrs)
+        super().__init__(*content, lang=lang, xmlns=xmlns, **attrs)
+
+    def render_tag(self, attrs: str, inner_html: str):
+        # html = ctx.render_content(self.content)
+        return f"<!DOCTYPE html><{self.tag} {attrs}>{inner_html}</{self.tag}>"
 
 
 class Head(BaseElement):

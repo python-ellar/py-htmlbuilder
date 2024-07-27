@@ -5,9 +5,10 @@ from py_html.contrib.bootstrap._types import BVariants
 from py_html.styles import StyleCSS
 
 
-class BIcon(el.I):
+class BIcon(el.i):
     def __init__(
         self,
+        *content: t.Any,
         icon_name: str,
         variant: t.Optional[BVariants] = "secondary",
         style: t.Optional[StyleCSS] = None,
@@ -26,4 +27,4 @@ class BIcon(el.I):
             class_name=f"bi {icon_name} b-icon {f'text-{variant}' if variant else ''} "
             + attrs.get("class_name", "")
         )
-        super().__init__(style=style, **attrs)
+        super().__init__(*content, style=style, **attrs)

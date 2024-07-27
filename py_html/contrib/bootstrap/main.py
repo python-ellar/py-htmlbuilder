@@ -14,7 +14,7 @@ BOOTSTRAP_JS = (
     "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
 )
 
-_avatar_style = el.Style(
+_avatar_style = el.style(
     {
         ".b-avatar": StyleCSS(
             display="inline-flex",
@@ -57,10 +57,10 @@ _avatar_style = el.Style(
 )
 
 
-class BootstrapHTML(el.DOCTYPE):
+class BootstrapHTML(el.html):
     def __init__(
         self,
-        content: t.Any,
+        *content: t.Any,
         title: str = "Bootstrap Example",
         head_contents: t.Sequence[t.Union[str, el.Element]] = (),
         bootstrap_css_link: str = BOOTSTRAP_CSS,
@@ -68,35 +68,26 @@ class BootstrapHTML(el.DOCTYPE):
         bootstrap_js_link: str = BOOTSTRAP_JS,
         **attrs,
     ) -> None:
-        page_content = el.Fragment(
-            el.Html(
-                content=el.Fragment(
-                    el.Head(
-                        content=el.Fragment(
-                            el.Title(page_title=title),
-                            el.Meta(charset="utf-8"),
-                            el.Meta(
-                                name="viewport",
-                                content="width=device-width, initial-scale=1",
-                            ),
-                            # Latest compiled and minified CSS
-                            el.Link(href=bootstrap_css_link, rel="stylesheet"),
-                            el.Link(href=bootstrap_icon_link, rel="stylesheet"),
-                            # Latest compiled JavaScript
-                            el.Script(src=bootstrap_js_link),
-                            _avatar_style,
-                            head_contents,
-                            lambda ctx: LazyComponent(
-                                resolver=lambda: ctx.get("root_styles")
-                            ),
-                        )
+        page_content = el.fragment(
+            el.head(
+                el.fragment(
+                    el.title(page_title=title),
+                    el.meta(charset="utf-8"),
+                    el.meta(
+                        name="viewport",
+                        content="width=device-width, initial-scale=1",
                     ),
-                    content,
-                    lambda ctx: LazyComponent(
-                        resolver=lambda: ctx.get("bottom_scripts")
-                    ),
-                ),
-                **attrs,
-            )
+                    # Latest compiled and minified CSS
+                    el.link(href=bootstrap_css_link, rel="stylesheet"),
+                    el.link(href=bootstrap_icon_link, rel="stylesheet"),
+                    # Latest compiled JavaScript
+                    el.script(src=bootstrap_js_link),
+                    _avatar_style,
+                    head_contents,
+                    lambda ctx: LazyComponent(resolver=lambda: ctx.get("root_styles")),
+                )
+            ),
+            *content,
+            lambda ctx: LazyComponent(resolver=lambda: ctx.get("bottom_scripts")),
         )
-        super().__init__(page_content=page_content)
+        super().__init__(page_content, **attrs)

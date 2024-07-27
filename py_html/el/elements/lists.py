@@ -16,19 +16,20 @@ class Ol(BaseHTML):
 
     def __init__(
         self,
+        *content,
         reversed: t.Optional[bool] = None,
         start: t.Optional[int] = None,
         type: t.Optional[t.Literal["1", "A", "a", "I", "i"]] = None,
         **attrs,
     ) -> None:
-        super().__init__(reversed=reversed, start=start, type=type, **attrs)
+        super().__init__(*content, reversed=reversed, start=start, type=type, **attrs)
 
 
 class Li(BaseHTML):
     tag = "li"
 
-    def __init__(self, value: t.Optional[int] = None, **attrs) -> None:
-        super().__init__(value=value, **attrs)
+    def __init__(self, *content, value: t.Optional[int] = None, **attrs) -> None:
+        super().__init__(*content, value=value, **attrs)
 
 
 class Dl(BaseHTML):
