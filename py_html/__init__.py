@@ -1,3 +1,3 @@
-"""PyHTML is HTML in python objects"""
+"""PyHTMLBuilder is HTML in python objects"""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
