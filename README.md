@@ -1,4 +1,4 @@
-# py-HTML
+# py-HTMLBuilder
 Building Static HTML and CSS in Python
 
 ## Introduction
