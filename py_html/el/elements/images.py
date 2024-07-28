@@ -1,6 +1,6 @@
 import typing as t
 
-from py_html.el.base import BaseHTML
+from py_html.el.base import BaseElement, BaseHTML
 
 
 class Image(BaseHTML):
@@ -164,11 +164,17 @@ class Svg(BaseHTML):
         self,
         height: t.Optional[t.Any] = None,
         width: t.Optional[t.Any] = None,
+        xmlns: str = "http://www.w3.org/2000/svg",
+        viewBox: t.Optional[str] = None,
+        role: str = "img",
         **attrs,
     ) -> None:
         super().__init__(
             height=height,
             width=width,
+            xmlns=xmlns,
+            role=role,
+            viewBox=viewBox,
             **attrs,
         )
 
@@ -200,3 +206,172 @@ class Use(BaseHTML):
 
     def render_tag(self, attrs: str, inner_html: str) -> str:
         return f"<{self.tag} {attrs}/>"
+
+
+class Circle(BaseElement):
+    tag = "circle"
+
+    def __init__(
+        self,
+        *content: t.Any,
+        cx: t.Optional[int] = None,
+        cy: t.Optional[int] = None,
+        r: t.Optional[int] = None,
+        stroke: t.Optional[str] = None,
+        stroke_width: t.Optional[str] = None,
+        fill: t.Optional[str] = None,
+        **attrs,
+    ):
+        super().__init__(
+            *content,
+            cx=cx,
+            cy=cy,
+            r=r,
+            stroke=stroke,
+            stroke_width=stroke_width,
+            fill=fill,
+            **attrs,
+        )
+
+
+class Rect(BaseElement):
+    tag = "rect"
+
+    def __init__(
+        self,
+        *content: t.Any,
+        x: t.Optional[int] = None,
+        y: t.Optional[int] = None,
+        width: t.Optional[int] = None,
+        height: t.Optional[int] = None,
+        stroke: t.Optional[str] = None,
+        stroke_width: t.Optional[str] = None,
+        fill: t.Optional[str] = None,
+        **attrs,
+    ):
+        super().__init__(
+            *content,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            stroke=stroke,
+            stroke_width=stroke_width,
+            fill=fill,
+            **attrs,
+        )
+
+
+class Polygon(BaseElement):
+    tag = "polygon"
+
+    def __init__(
+        self,
+        *content: t.Any,
+        points: t.Optional[str] = None,
+        stroke: t.Optional[str] = None,
+        stroke_width: t.Optional[str] = None,
+        fill: t.Optional[str] = None,
+        **attrs,
+    ):
+        super().__init__(
+            *content,
+            points=points,
+            stroke=stroke,
+            stroke_width=stroke_width,
+            fill=fill,
+            **attrs,
+        )
+
+
+class Defs(BaseElement):
+    tag = "defs"
+
+
+class LinearGradient(BaseElement):
+    tag = "linearGradient"
+
+
+class Stop(BaseElement):
+    tag = "stop"
+
+    def __init__(self, *content: t.Any, stop_color: t.Optional[str] = None, **attrs):
+        super().__init__(*content, stop_color=stop_color, **attrs)
+
+
+class Ellipse(BaseElement):
+    tag = "ellipse"
+
+    def __init__(
+        self,
+        *content: t.Any,
+        cx: t.Optional[int] = None,
+        cy: t.Optional[int] = None,
+        r: t.Optional[int] = None,
+        rx: t.Optional[int] = None,
+        ry: t.Optional[int] = None,
+        stroke: t.Optional[str] = None,
+        stroke_width: t.Optional[str] = None,
+        fill: t.Optional[str] = None,
+        **attrs,
+    ):
+        super().__init__(
+            *content,
+            cx=cx,
+            cy=cy,
+            r=r,
+            rx=rx,
+            ry=ry,
+            stroke=stroke,
+            stroke_width=stroke_width,
+            fill=fill,
+            **attrs,
+        )
+
+
+class Text(BaseElement):
+    tag = "text"
+
+    def __init__(
+        self,
+        *content: t.Any,
+        font_size: t.Optional[int] = None,
+        font_family: t.Optional[str] = None,
+        x: t.Optional[str] = None,
+        y: t.Optional[str] = None,
+        fill: t.Optional[str] = None,
+        **attrs,
+    ):
+        super().__init__(
+            *content,
+            font_size=font_size,
+            font_family=font_family,
+            x=x,
+            y=y,
+            fill=fill,
+            **attrs,
+        )
+
+
+class Path(BaseElement):
+    tag = "path"
+
+    def __init__(
+        self,
+        *content: t.Any,
+        d: t.Optional[str] = None,
+        fill_rule: t.Optional[str] = None,
+        clip_rule: t.Optional[str] = None,
+        stroke: t.Optional[str] = None,
+        fill: t.Optional[str] = None,
+        **attrs,
+    ):
+        super().__init__(
+            *content,
+            d=d,
+            fill_rule=fill_rule,
+            clip_rule=clip_rule,
+            stroke=stroke,
+            fill=fill,
+            **attrs,
+        )
