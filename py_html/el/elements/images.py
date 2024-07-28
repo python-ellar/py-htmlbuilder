@@ -162,6 +162,7 @@ class Svg(BaseHTML):
 
     def __init__(
         self,
+        *content: t.Any,
         height: t.Optional[t.Any] = None,
         width: t.Optional[t.Any] = None,
         xmlns: str = "http://www.w3.org/2000/svg",
@@ -170,6 +171,7 @@ class Svg(BaseHTML):
         **attrs,
     ) -> None:
         super().__init__(
+            *content,
             height=height,
             width=width,
             xmlns=xmlns,
