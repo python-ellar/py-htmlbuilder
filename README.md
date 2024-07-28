@@ -3,9 +3,9 @@ Building Static HTML and CSS in Python
 
 ## Introduction
 PyHTML is a library that compiles HTML syntax based on how py-HTML elements are combined. The compiled HTML is still static not JS interactions or Virtual DOM thingy.
-It simply provides components that make it easier to build the HTML template faster. 
+It simply provides components that make building the HTML template faster. 
 
-Although there are Jinja and Mako in this space, I don't intend to make this library a substitute for such a package.
+Although Jinja and Mako are in this space, I don't intend to substitute this library for such a package.
 
 **This is just an experiment.**
 
