@@ -12,9 +12,9 @@ authors = [
    {name = "Ezeudoh Tochukwu", email = "tochukwu.ezeudoh@gmail.com"},
 ]
 dynamic = ["version", "description"]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 readme = "README.md"
-home-page = "https://github.com/python-ellar/ellar"
+home-page = "https://github.com/python-ellar/py-html"
 classifiers = [
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
@@ -39,8 +39,7 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 
-dependencies = [
-]
+dependencies = []
 
 [project.urls]
 Documentation = "https://python-ellar.github.io/py-html/"

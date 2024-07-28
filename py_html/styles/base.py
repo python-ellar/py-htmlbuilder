@@ -1,13 +1,12 @@
 import typing as t
 
-from ellar.common.compatible import AttributeDict
 from typing_extensions import Unpack
 
 from .spec import CSSAttributesSpec
 from .utils import snake_to_kebab
 
 
-class StyleCSS(AttributeDict):
+class StyleCSS(dict):
     def __init__(self, **styles: Unpack[CSSAttributesSpec]) -> None:
         super().__init__(**styles)
 
