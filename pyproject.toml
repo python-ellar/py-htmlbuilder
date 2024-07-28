@@ -7,14 +7,14 @@ name = "py_html"
 
 
 [project]
-name = "py-html"
+name = "py-htmlbuilder"
 authors = [
    {name = "Ezeudoh Tochukwu", email = "tochukwu.ezeudoh@gmail.com"},
 ]
 dynamic = ["version", "description"]
 requires-python = ">=3.8"
 readme = "README.md"
-home-page = "https://github.com/python-ellar/py-html"
+home-page = "https://github.com/python-ellar/py-htmlbuilder"
 classifiers = [
     "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
@@ -42,10 +42,10 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Documentation = "https://python-ellar.github.io/py-html/"
-Source = "https://github.com/python-ellar/py-html"
-Homepage = "https://python-ellar.github.io/py-html/"
-"Bug Tracker" = "https://github.com/python-ellar/py-html/issues"
+Documentation = "https://python-ellar.github.io/py-htmlbuilder/"
+Source = "https://github.com/python-ellar/py-htmlbuilder"
+Homepage = "https://python-ellar.github.io/py-htmlbuilder/"
+"Bug Tracker" = "https://github.com/python-ellar/py-htmlbuilder/issues"
 
 [project.optional-dependencies]
 all = []
