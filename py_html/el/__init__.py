@@ -184,6 +184,15 @@ from .elements.images import (
     Canvas as canvas,
 )
 from .elements.images import (
+    Circle as circle,
+)
+from .elements.images import (
+    Defs as defs,
+)
+from .elements.images import (
+    Ellipse as ellipse,
+)
+from .elements.images import (
     FigCaption as figcaption,
 )
 from .elements.images import (
@@ -193,13 +202,31 @@ from .elements.images import (
     Image as img,
 )
 from .elements.images import (
+    LinearGradient as linearGradient,
+)
+from .elements.images import (
     Map as map,
+)
+from .elements.images import (
+    Path as path,
 )
 from .elements.images import (
     Picture as picture,
 )
 from .elements.images import (
+    Polygon as polygon,
+)
+from .elements.images import (
+    Rect as rect,
+)
+from .elements.images import (
+    Stop as stop,
+)
+from .elements.images import (
     Svg as svg,
+)
+from .elements.images import (
+    Text as text,
 )
 from .elements.images import (
     Use as use,
@@ -433,6 +460,15 @@ __all__ = [
     "video",
     "track",
     "source",
+    "circle",
+    "rect",
+    "polygon",
+    "defs",
+    "linearGradient",
+    "stop",
+    "ellipse",
+    "text",
+    "path",
     "BaseElement",
     "BaseHTML",
     "Element",
